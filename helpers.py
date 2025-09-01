@@ -1,7 +1,24 @@
 import random
 import pgzrun
+import pygame
+
+from audio_library import AudioLibrary
+from audio_type import AudioType
 from common import *
 from static import WIDTH, HEIGHT, PLAYER_IMAGE_HEIGHT, PLAYER_IMAGE_WIDTH
+from user_settings import UserSettings
+
+user_settings = UserSettings()
+sfx_library = {
+    "pistol": AudioLibrary(filename='music/pistol.mp3', audio_type=AudioType.SFX, loop=0, channel=0),
+    "mortar": AudioLibrary(filename='music/mortar.mp3', audio_type=AudioType.SFX, loop=0, channel=0),
+    "reload": AudioLibrary(filename='music/gun_reload.mp3', audio_type=AudioType.SFX, loop=0, channel=0),
+    "explosion": AudioLibrary(filename='music/explosion_fx_3.mp3', audio_type=AudioType.SFX, loop=0, channel=0),
+}
+
+music_library = {
+    "main_theme": AudioLibrary(filename='music/pi-pi-pi-pi-bubu-bum2.mp3', channel=1, loop=-1)
+}
 
 
 def enemies_draw(enemies):
@@ -73,4 +90,5 @@ def is_in_collision(x, y):
     ]
 
     return x in collision_square[0] or y in collision_square[0] or x in collision_square[1] or y in collision_square[1] or y in collision_square[1]
+
 

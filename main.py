@@ -1,20 +1,22 @@
 import random
 import pgzrun
-import pygame
 
 import helpers
 from static import *
 
 play = pgzrun.mod.Actor('gra', (WIDTH / 2, HEIGHT / 2))
 instruction = pgzrun.mod.Actor('gra', (512, 580))
+settings = pgzrun.mod.Actor('gra', (512, 650))
+cross = pgzrun.mod.Actor('cross', (1000, 30))
+
+settings_m = pgzrun.mod.Actor('gra', (WIDTH / 2, HEIGHT / 2))
+
 player = pgzrun.mod.Actor('cat', (WIDTH / 2, HEIGHT / 2))
+
 bomb = pgzrun.mod.Actor('bomb', (random.randint(0,1024),random.randint(0, 1024)))
 add_ammo = pgzrun.mod.Actor('amunicion', (1009,-60))
 enemies = helpers.generate_enemies(ENEMIES_COUNT)
-pygame.mixer.Channel(0).play(Sound=pygame.mixer.Sound('music/pi-pi-pi-pi-bubu-bum2.mp3'),loops=-1)
-
-def plej_mjuzik(fajl):
-    pygame.mixer.Channel(1).play(pygame.mixer.Sound(fajl))
+helpers.music_library["main_theme"].play()
 
 pelets = []
 
@@ -30,13 +32,27 @@ def draw():
             helpers.my_map_draw()
             play.draw()
             instruction.draw()
+            settings.draw()
             screen.draw.text('Level: ' + str(LEVEL), pos=(15, 15), color='white', fontsize=40)
             screen.draw.text('Kampania', center=(WIDTH / 2, HEIGHT / 2), color='white', fontsize=50)
-            screen.draw.text('Abc', center=(WIDTH / 2, HEIGHT / 2), color='white', fontsize=50)
-            screen.draw.text('Do srzelania jest spacja.\nShift jest od lepszej amunicji ,która przechodzi przez myszy.\n Aby wyjść kliknij "escape".',center=(510, 580), color='khaki', fontsize=35)
+            screen.draw.text('Sterowanie', center=(512, 580), color='white', fontsize=50)
+            screen.draw.text('Ustawienia\n(Uwaga wersja testowa)', center=(512, 650), color='white', fontsize=50)
         elif LEVEL > 5:
             helpers.my_map_draw()
-            screen.draw.text('Dzienkuję za zagranię w wersje\n testową gry "CatGameZero"', center=(WIDTH / 2, HEIGHT / 2), color='White', fontsize=60)
+            screen.draw.text('Dzienkuję za zagranię w wersje\n testową gry "CatGameZero"', center=(WIDTH / 2, HEIGHT / 2), color='White', fontsize=55)
+    elif mode == 'instr...':
+        helpers.my_map_draw()
+        cross.draw()
+        screen.draw.text('Do srzelania jest spacja.\nShift jest od lepszej amunicji ,która przechodzi przez myszy.\n Aby wyjść kliknij "escape".',center=(WIDTH / 2, HEIGHT / 2), color='khaki', fontsize=35)
+    elif mode == 'settings':
+        helpers.my_map_draw()
+        settings_m.draw()
+        cross.draw()
+        screen.draw.text('Muzyka', center=(WIDTH / 2, HEIGHT / 2), color='White', fontsize=55)
+    elif mode == 'miusic_settings':
+        helpers.my_map_draw()
+        cross.draw()
+
     elif mode == 'game':
         helpers.my_map_draw()
         helpers.enemies_draw(enemies)
@@ -70,18 +86,18 @@ def on_key_down(key):
                 if AMMO > 0 and ammo_in_gun < 6:
                     AMMO -= 1
                     ammo_in_gun += 1
-                    music.play_once('gun_reload')
+                    helpers.sfx_library["reload"].play()
                 else:
                     break
         if key == keys.SPACE and ammo_in_gun > 0 or key == keys.LSHIFT and super_ammo > 0:
             if key == keys.SPACE:
                 ammo_in_gun -= 1
                 pelet = pgzrun.mod.Actor('meal')
-                plej_mjuzik('music/pistol.mp3')
+                helpers.sfx_library["pistol"].play()
                 pelet.force = 0
             elif key == keys.LSHIFT:
                 super_ammo -= 1
-                plej_mjuzik('music/mortar.mp3')
+                helpers.sfx_library["mortar"].play()
                 pelet = pgzrun.mod.Actor('s_missel')
                 pelet.force = 1
             # Y
@@ -140,12 +156,25 @@ def on_key_down(key):
         test = 1
         mode = 'menu'
 
-def on_mouse_down(button, pos):
+def on_mouse_down(pos, button):
     global mode, bomb
     if mode == 'menu' and button == mouse.LEFT:
         if play.collidepoint(pos):
             mode = 'game'
             bomb.image = 'bomb'
+        if instruction.collidepoint(pos):
+            mode = 'instr...'
+        elif settings.collidepoint(pos):
+            mode = 'settings'
+    elif mode == 'instr...' and button == mouse.LEFT or mode == 'settings' and button == mouse.LEFT:
+        if mode == 'settings':
+            if settings_m.collidepoint(pos):
+                mode = 'miusic_settings'
+        if cross.collidepoint(pos):
+            mode = 'menu'
+    elif mode == 'miusic_settings' and button == mouse.LEFT:
+        if cross.collidepoint(pos):
+            mode = 'settings'
 
 def collision():
     global pelets, enemies, win, mode, AMMO, add_ammo, additional_ammunition, bomb
@@ -160,7 +189,7 @@ def collision():
         if bomb.colliderect(pelets[j]) and bomb.image == 'bomb':
             pelets[j].direction = random.randint(1, 4)
             bomb.image = 'explosion'
-            plej_mjuzik('music/explosion_fx_3.mp3')
+            helpers.sfx_library["explosion"].play()
     enemi_index = bomb.collidelist(enemies)
     if enemi_index != -1 and bomb.image == 'explosion':
         win -= 1
@@ -179,7 +208,7 @@ def collision():
             super_ammo += random.randin(0,1)
         add_ammo.y = -60
 
-def update(dt):
+def update():
     global player, pelets, mode, enemies, ENEMIES_COUNT, AMMO, ammo_in_gun, super_ammo, win, additional_ammunition, test
     if mode == 'game':
 
