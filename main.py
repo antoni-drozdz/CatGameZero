@@ -1,5 +1,7 @@
 import random
 import pgzrun
+import pygame
+
 import helpers
 from static import *
 
@@ -9,6 +11,10 @@ player = pgzrun.mod.Actor('cat', (WIDTH / 2, HEIGHT / 2))
 bomb = pgzrun.mod.Actor('bomb', (random.randint(0,1024),random.randint(0, 1024)))
 add_ammo = pgzrun.mod.Actor('amunicion', (1009,-60))
 enemies = helpers.generate_enemies(ENEMIES_COUNT)
+pygame.mixer.Channel(0).play(Sound=pygame.mixer.Sound('music/pi-pi-pi-pi-bubu-bum2.mp3'),loops=-1)
+
+def plej_mjuzik(fajl):
+    pygame.mixer.Channel(1).play(pygame.mixer.Sound(fajl))
 
 pelets = []
 
@@ -71,11 +77,11 @@ def on_key_down(key):
             if key == keys.SPACE:
                 ammo_in_gun -= 1
                 pelet = pgzrun.mod.Actor('meal')
-                music.play_once('pistol')
+                plej_mjuzik('music/pistol.mp3')
                 pelet.force = 0
             elif key == keys.LSHIFT:
                 super_ammo -= 1
-                music.play_once('mortar')
+                plej_mjuzik('music/mortar.mp3')
                 pelet = pgzrun.mod.Actor('s_missel')
                 pelet.force = 1
             # Y
@@ -154,7 +160,7 @@ def collision():
         if bomb.colliderect(pelets[j]) and bomb.image == 'bomb':
             pelets[j].direction = random.randint(1, 4)
             bomb.image = 'explosion'
-            music.play_once('explosion_fx_3')
+            plej_mjuzik('music/explosion_fx_3.mp3')
     enemi_index = bomb.collidelist(enemies)
     if enemi_index != -1 and bomb.image == 'explosion':
         win -= 1
