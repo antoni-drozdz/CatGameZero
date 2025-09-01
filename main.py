@@ -4,8 +4,7 @@ import helpers
 from static import *
 
 play = pgzrun.mod.Actor('gra', (WIDTH / 2, HEIGHT / 2))
-mortar = pgzrun.mod.Actor('mortar', (880, 990))
-mortar_ex = pgzrun.mod.Actor('explosion', (random.randint(0,800),random.randint(0, 900)))
+instruction = pgzrun.mod.Actor('gra', (512, 580))
 player = pgzrun.mod.Actor('cat', (WIDTH / 2, HEIGHT / 2))
 bomb = pgzrun.mod.Actor('bomb', (random.randint(0,1024),random.randint(0, 1024)))
 add_ammo = pgzrun.mod.Actor('amunicion', (1009,-60))
@@ -24,8 +23,10 @@ def draw():
         if LEVEL < 5:
             helpers.my_map_draw()
             play.draw()
+            instruction.draw()
             screen.draw.text('Level: ' + str(LEVEL), pos=(15, 15), color='white', fontsize=40)
             screen.draw.text('Kampania', center=(WIDTH / 2, HEIGHT / 2), color='white', fontsize=50)
+            screen.draw.text('Abc', center=(WIDTH / 2, HEIGHT / 2), color='white', fontsize=50)
             screen.draw.text('Do srzelania jest spacja.\nShift jest od lepszej amunicji ,która przechodzi przez myszy.\n Aby wyjść kliknij "escape".',center=(510, 580), color='khaki', fontsize=35)
         elif LEVEL > 5:
             helpers.my_map_draw()
@@ -33,13 +34,10 @@ def draw():
     elif mode == 'game':
         helpers.my_map_draw()
         helpers.enemies_draw(enemies)
-        mortar.draw()
         bomb.draw()
         for i in range(len(pelets)):
             pelets[i].draw()
         player.draw()
-        if shot > 0:
-            mortar_ex.draw()
         screen.draw.text(str(ammo_in_gun) + '/' + str(AMMO), center=(950, 1000), color='white', fontsize=30)
         screen.draw.text('Amunicja przeciw pancerna: ' + str(super_ammo), center=(150, 1000), color='white',fontsize=30)
         add_ammo.draw()
@@ -54,14 +52,11 @@ def draw():
         screen.draw.text('Kliknij enter', center=(512, 580), color='white', fontsize=55)
 
 def on_key_down(key):
-    global pelets, AMMO, super_ammo, ammo_in_gun, enemies, ENEMIES_COUNT, mode, win, LEVEL, test, additional_ammunition, shot, mortar_ex
+    global pelets, AMMO, super_ammo, ammo_in_gun, enemies, ENEMIES_COUNT, mode, win, LEVEL, test, additional_ammunition, shot
     if key == keys.ESCAPE:
         exit()
 
     if mode == 'game':
-        if player.colliderect(mortar) and key == keys.I:
-            music.play('mortar')
-            shot += 1
         if key == keys.R:
             AMMO += ammo_in_gun
             ammo_in_gun = 0
@@ -104,10 +99,6 @@ def on_key_down(key):
                 pelets.append(pelet)
 
     elif mode == 'win' and key == keys.RETURN and LEVEL < 5:
-        mortar_ex = random.randint(0,800),random.randint(0, 900)
-        mortar_ex.image = 'explosion'
-        shot = 0
-
         add_ammo.y = -60
         additional_ammunition = 1
 
@@ -130,9 +121,6 @@ def on_key_down(key):
         mode = 'menu'
 
     if mode == 'end' and key == keys.RETURN:
-        mortar_ex = random.randint(0, 800), random.randint(0, 900)
-        mortar_ex.image = 'explosion'
-        shot = 0
 
         add_ammo.y = -60
         additional_ammunition = 1
@@ -185,7 +173,7 @@ def collision():
             super_ammo += random.randin(0,1)
         add_ammo.y = -60
 
-def update():
+def update(dt):
     global player, pelets, mode, enemies, ENEMIES_COUNT, AMMO, ammo_in_gun, super_ammo, win, additional_ammunition, test
     if mode == 'game':
 
