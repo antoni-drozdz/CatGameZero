@@ -91,4 +91,8 @@ def is_in_collision(x, y):
 
     return x in collision_square[0] or y in collision_square[0] or x in collision_square[1] or y in collision_square[1] or y in collision_square[1]
 
+def save_settings(): # parametr objektów jak w settings.json
+    if True:
+        print("OK")
+    # Zapisz do settings.json
 

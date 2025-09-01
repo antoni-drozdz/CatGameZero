@@ -1,0 +1,10 @@
+{
+  "music": {
+    "enable": true,
+    "volume": 3
+  },
+  "sfx": {
+    "enable": true,
+    "volume": 5
+  }
+}

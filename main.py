@@ -5,7 +5,14 @@ import helpers
 from static import *
 
 play = pgzrun.mod.Actor('gra', (WIDTH / 2, HEIGHT / 2))
+
+#Sterowanie od mode = "instr..."
 instruction = pgzrun.mod.Actor('gra', (512, 580))
+instruction_1 = pgzrun.mod.Actor('wsad', (300, 200))
+instruction_2 = pgzrun.mod.Actor('spacet1', (300, 300))
+instruction_3 = pgzrun.mod.Actor('shift1', (300, 400))
+instruction_4 = pgzrun.mod.Actor('esc1', (300, 100))
+
 settings = pgzrun.mod.Actor('gra', (512, 650))
 cross = pgzrun.mod.Actor('cross', (1000, 30))
 
@@ -39,16 +46,23 @@ def draw():
             screen.draw.text('Ustawienia\n(Uwaga wersja testowa)', center=(512, 650), color='white', fontsize=50)
         elif LEVEL > 5:
             helpers.my_map_draw()
-            screen.draw.text('Dzienkuję za zagranię w wersje\n testową gry "CatGameZero"', center=(WIDTH / 2, HEIGHT / 2), color='White', fontsize=55)
+            screen.draw.text('Dzienkuję za zagranię w wersje\n testową gry "CatGameZero"', center=(WIDTH / 2, HEIGHT / 2), color='white', fontsize=55)
     elif mode == 'instr...':
         helpers.my_map_draw()
         cross.draw()
-        screen.draw.text('Do srzelania jest spacja.\nShift jest od lepszej amunicji ,która przechodzi przez myszy.\n Aby wyjść kliknij "escape".',center=(WIDTH / 2, HEIGHT / 2), color='khaki', fontsize=35)
+        instruction_4.draw()
+        screen.draw.text('- wyjście z gry',center=(420,100), color='red', fontsize=35)
+        instruction_1.draw()
+        screen.draw.text('- chodzenie', center=(440, 200), color='white', fontsize=40)
+        instruction_2.draw()
+        screen.draw.text('- strzelanie',center=(420,300), color='white', fontsize=40)
+        instruction_3.draw()
+        screen.draw.text('- strzelanie (lepsze kule)', center=(500, 400), color='white', fontsize=40)
     elif mode == 'settings':
         helpers.my_map_draw()
         settings_m.draw()
         cross.draw()
-        screen.draw.text('Muzyka', center=(WIDTH / 2, HEIGHT / 2), color='White', fontsize=55)
+        screen.draw.text('Dźwięk', center=(WIDTH / 2, HEIGHT / 2), color='White', fontsize=55)
     elif mode == 'miusic_settings':
         helpers.my_map_draw()
         cross.draw()
