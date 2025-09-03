@@ -1,25 +1,37 @@
 import random
 import pgzrun
-import pygame
 
 from audio_library import AudioLibrary
 from audio_type import AudioType
 from common import *
 from static import WIDTH, HEIGHT, PLAYER_IMAGE_HEIGHT, PLAYER_IMAGE_WIDTH
-from user_settings import UserSettings
+from settings import Settings
 
-user_settings = UserSettings()
+settings = Settings()
+
 sfx_library = {
-    "pistol": AudioLibrary(filename='music/pistol.mp3', audio_type=AudioType.SFX, loop=0, channel=0),
-    "mortar": AudioLibrary(filename='music/mortar.mp3', audio_type=AudioType.SFX, loop=0, channel=0),
-    "reload": AudioLibrary(filename='music/gun_reload.mp3', audio_type=AudioType.SFX, loop=0, channel=0),
-    "explosion": AudioLibrary(filename='music/explosion_fx_3.mp3', audio_type=AudioType.SFX, loop=0, channel=0),
+    "pistol": AudioLibrary(filename='music/pistol.mp3', audio_type=AudioType.SFX, loop=0, channel=0, settings=settings),
+    "mortar": AudioLibrary(filename='music/mortar.mp3', audio_type=AudioType.SFX, loop=0, channel=0, settings=settings),
+    "reload": AudioLibrary(filename='music/gun_reload.mp3', audio_type=AudioType.SFX, loop=0, channel=0, settings=settings),
+    "explosion": AudioLibrary(filename='music/explosion_fx_3.mp3', audio_type=AudioType.SFX, loop=0, channel=0, settings=settings),
 }
 
 music_library = {
-    "main_theme": AudioLibrary(filename='music/pi-pi-pi-pi-bubu-bum2.mp3', channel=1, loop=-1)
+    "main_theme": AudioLibrary(filename='music/pi-pi-pi-pi-bubu-bum2.mp3', channel=1, loop=-1, settings=settings),
 }
 
+def reload_audio_settings(audio_type: AudioType):
+    if audio_type == AudioType.SFX:
+        for sfx in sfx_library.values():
+            sfx.settings = settings
+            sfx.reload_settings()
+    if audio_type == AudioType.MUSIC:
+        for music in music_library.values():
+            music.settings = settings
+            music.reload_settings()
+            if music.is_playing:
+                music.mute()
+                music.play()
 
 def enemies_draw(enemies):
     for i in range (len(enemies)):
@@ -91,8 +103,4 @@ def is_in_collision(x, y):
 
     return x in collision_square[0] or y in collision_square[0] or x in collision_square[1] or y in collision_square[1] or y in collision_square[1]
 
-def save_settings(): # parametr objektów jak w settings.json
-    if True:
-        print("OK")
-    # Zapisz do settings.json
 

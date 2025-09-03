@@ -2,6 +2,7 @@ import random
 import pgzrun
 
 import helpers
+from audio_type import AudioType
 from static import *
 
 play = pgzrun.mod.Actor('gra', (WIDTH / 2, HEIGHT / 2))
@@ -14,9 +15,10 @@ instruction_3 = pgzrun.mod.Actor('shift1', (300, 400))
 instruction_4 = pgzrun.mod.Actor('esc1', (300, 100))
 
 settings = pgzrun.mod.Actor('gra', (512, 650))
-cross = pgzrun.mod.Actor('cross', (1000, 30))
-
 settings_m = pgzrun.mod.Actor('gra', (WIDTH / 2, HEIGHT / 2))
+settings_m_on_off = pgzrun.mod.Actor('music_on', (300,100))
+settings_sfx = pgzrun.mod.Actor('sfx_on', (300,200))
+cross = pgzrun.mod.Actor('cross', (1000, 30))
 
 player = pgzrun.mod.Actor('cat', (WIDTH / 2, HEIGHT / 2))
 
@@ -44,7 +46,7 @@ def draw():
             screen.draw.text('Kampania', center=(WIDTH / 2, HEIGHT / 2), color='white', fontsize=50)
             screen.draw.text('Sterowanie', center=(512, 580), color='white', fontsize=50)
             screen.draw.text('Ustawienia\n(Uwaga wersja testowa)', center=(512, 650), color='white', fontsize=50)
-        elif LEVEL > 5:
+        elif LEVEL == 5:
             helpers.my_map_draw()
             screen.draw.text('Dzienkuję za zagranię w wersje\n testową gry "CatGameZero"', center=(WIDTH / 2, HEIGHT / 2), color='white', fontsize=55)
     elif mode == 'instr...':
@@ -64,8 +66,20 @@ def draw():
         cross.draw()
         screen.draw.text('Dźwięk', center=(WIDTH / 2, HEIGHT / 2), color='White', fontsize=55)
     elif mode == 'miusic_settings':
+        if helpers.settings.music.enable:
+            settings_m_on_off.image = 'music_on'
+        else:
+            settings_m_on_off.image = 'music_off'
+
+        if helpers.settings.sfx.enable:
+            settings_sfx.image = 'sfx_on'
+        else:
+            settings_sfx.image = 'sfx_off'
+
         helpers.my_map_draw()
         cross.draw()
+        settings_m_on_off.draw()
+        settings_sfx.draw()
 
     elif mode == 'game':
         helpers.my_map_draw()
@@ -135,6 +149,8 @@ def on_key_down(key):
                 pelets.append(pelet)
 
     elif mode == 'win' and key == keys.RETURN and LEVEL < 5:
+        pelets.clear()
+
         add_ammo.y = -60
         additional_ammunition = 1
 
@@ -157,15 +173,21 @@ def on_key_down(key):
         mode = 'menu'
 
     if mode == 'end' and key == keys.RETURN:
+        pelets.clear()
 
         add_ammo.y = -60
         additional_ammunition = 1
+
         enemies.clear()
         enemies = helpers.generate_enemies(ENEMIES_COUNT)
+
         player.pos = WIDTH / 2, HEIGHT / 2
+
         AMMO = 18
         ammo_in_gun = 6
         super_ammo = 2
+        bomb.pos = random.randint(0, 1024), random.randint(0, 1024)
+
         win = ENEMIES_COUNT
         test = 1
         mode = 'menu'
@@ -187,6 +209,30 @@ def on_mouse_down(pos, button):
         if cross.collidepoint(pos):
             mode = 'menu'
     elif mode == 'miusic_settings' and button == mouse.LEFT:
+        save_settings = False
+        if settings_m_on_off.collidepoint(pos):
+            save_settings = True
+            if settings_m_on_off.image == 'music_off':
+                settings_m_on_off.image = 'music_on'
+                helpers.settings.music.enable = True
+            elif settings_m_on_off.image == 'music_on':
+                settings_m_on_off.image = 'music_off'
+                helpers.settings.music.enable = False
+
+        if settings_sfx.collidepoint(pos):
+            save_settings = True
+            if settings_sfx.image == 'sfx_off':
+                settings_sfx.image = 'sfx_on'
+                helpers.settings.sfx.enable = True
+            elif settings_sfx.image == 'sfx_on':
+                settings_sfx.image = 'sfx_off'
+                helpers.settings.sfx.enable = False
+
+        if save_settings:
+            helpers.settings.save_settings()
+            helpers.reload_audio_settings(AudioType.SFX)
+            helpers.reload_audio_settings(AudioType.MUSIC)
+
         if cross.collidepoint(pos):
             mode = 'settings'
 
@@ -225,8 +271,6 @@ def collision():
 def update():
     global player, pelets, mode, enemies, ENEMIES_COUNT, AMMO, ammo_in_gun, super_ammo, win, additional_ammunition, test
     if mode == 'game':
-
-
         collision()
         if bomb.image == 'explosion':
             clock.schedule(boom, 5.0)
@@ -268,9 +312,9 @@ def update():
         if AMMO == 0 and additional_ammunition == 1:
             add_ammo.y = 14
 
-
         if win == 0:
             mode = 'win'
+
 
 
 pgzrun.go()
