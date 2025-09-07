@@ -5,20 +5,23 @@ import helpers
 from audio_type import AudioType
 from static import *
 
-play = pgzrun.mod.Actor('gra', (WIDTH / 2, HEIGHT / 2))
+back_to_game = pgzrun.mod.Actor('back_to_game',(WIDTH/2, HEIGHT/2))
+back_to_menu = pgzrun.mod.Actor('menu',(WIDTH/2, 610))
+exit = pgzrun.mod.Actor('exit', (512, 740))
+play = pgzrun.mod.Actor('play', (512, 400))
 
 #Sterowanie od mode = "instr..."
-instruction = pgzrun.mod.Actor('gra', (512, 580))
+instruction = pgzrun.mod.Actor('control', (512, 630))
 instruction_1 = pgzrun.mod.Actor('wsad', (300, 200))
 instruction_2 = pgzrun.mod.Actor('spacet1', (300, 300))
 instruction_3 = pgzrun.mod.Actor('shift1', (300, 400))
 instruction_4 = pgzrun.mod.Actor('esc1', (300, 100))
 
-settings = pgzrun.mod.Actor('gra', (512, 650))
+settings = pgzrun.mod.Actor('settings', (WIDTH/2, HEIGHT/2))
 settings_m = pgzrun.mod.Actor('gra', (WIDTH / 2, HEIGHT / 2))
 settings_m_on_off = pgzrun.mod.Actor('music_on', (300,100))
 settings_sfx = pgzrun.mod.Actor('sfx_on', (300,200))
-cross = pgzrun.mod.Actor('cross', (1000, 30))
+back = pgzrun.mod.Actor('back', (1000, 30))
 
 player = pgzrun.mod.Actor('cat', (WIDTH / 2, HEIGHT / 2))
 
@@ -36,36 +39,30 @@ def boom():
 
 def draw():
     if mode == 'menu':
-        helpers.my_map_draw()
         if LEVEL < 5:
+            exit.pos = (512, 740)
             helpers.my_map_draw()
             play.draw()
             instruction.draw()
             settings.draw()
             screen.draw.text('Level: ' + str(LEVEL), pos=(15, 15), color='white', fontsize=40)
-            screen.draw.text('Kampania', center=(WIDTH / 2, HEIGHT / 2), color='white', fontsize=50)
-            screen.draw.text('Sterowanie', center=(512, 580), color='white', fontsize=50)
-            screen.draw.text('Ustawienia\n(Uwaga wersja testowa)', center=(512, 650), color='white', fontsize=50)
+            exit.draw()
         elif LEVEL == 5:
             helpers.my_map_draw()
             screen.draw.text('Dzienkuję za zagranię w wersje\n testową gry "CatGameZero"', center=(WIDTH / 2, HEIGHT / 2), color='white', fontsize=55)
     elif mode == 'instr...':
         helpers.my_map_draw()
-        cross.draw()
+        back.draw()
         instruction_4.draw()
-        screen.draw.text('- wyjście z gry',center=(420,100), color='red', fontsize=35)
+        screen.draw.text('- pause menu',center=(420,100), color='white', fontsize=35)
         instruction_1.draw()
         screen.draw.text('- chodzenie', center=(440, 200), color='white', fontsize=40)
         instruction_2.draw()
         screen.draw.text('- strzelanie',center=(420,300), color='white', fontsize=40)
         instruction_3.draw()
         screen.draw.text('- strzelanie (lepsze kule)', center=(500, 400), color='white', fontsize=40)
-    elif mode == 'settings':
-        helpers.my_map_draw()
-        settings_m.draw()
-        cross.draw()
-        screen.draw.text('Dźwięk', center=(WIDTH / 2, HEIGHT / 2), color='White', fontsize=55)
     elif mode == 'miusic_settings':
+        helpers.my_map_draw()
         if helpers.settings.music.enable:
             settings_m_on_off.image = 'music_on'
         else:
@@ -77,14 +74,17 @@ def draw():
             settings_sfx.image = 'sfx_off'
 
         helpers.my_map_draw()
-        cross.draw()
+        screen.draw.text('- muzyka', center=(420, 100), color='white', fontsize=40)
+        screen.draw.text('- sfx', center=(400, 200), color='white', fontsize=40)
+        back.draw()
         settings_m_on_off.draw()
         settings_sfx.draw()
 
     elif mode == 'game':
         helpers.my_map_draw()
         helpers.enemies_draw(enemies)
-        bomb.draw()
+        if bomb_draw == 1:
+            bomb.draw()
         for i in range(len(pelets)):
             pelets[i].draw()
         player.draw()
@@ -98,13 +98,22 @@ def draw():
         screen.draw.text('Kliknij enter', center=(512,580), color='white', fontsize=55)
 
     elif mode == 'end' or AMMO == 0 and ammo_in_gun == 0 and super_ammo == 0:
+        helpers.my_map_draw()
         screen.draw.text('Przegrana', center=(WIDTH / 2, HEIGHT / 2), color='red', fontsize=75)
         screen.draw.text('Kliknij enter', center=(512, 580), color='white', fontsize=55)
 
+    elif mode == 'pause':
+        screen.draw.text('Pause menu', center=(WIDTH / 2, 400), color='white', fontsize=60)
+        back_to_game.draw()
+        back_to_menu.draw()
+        exit.pos = (WIDTH / 2, 710)
+        exit.draw()
+        screen.draw.text('Level: ' + str(LEVEL), pos=(15, 15), color='white', fontsize=40)
+
 def on_key_down(key):
-    global pelets, AMMO, super_ammo, ammo_in_gun, enemies, ENEMIES_COUNT, mode, win, LEVEL, test, additional_ammunition, shot
-    if key == keys.ESCAPE:
-        exit()
+    global pelets, AMMO, super_ammo, ammo_in_gun, enemies, ENEMIES_COUNT, mode, win, LEVEL, test, additional_ammunition, shot, bomb_draw
+    if key == keys.ESCAPE and mode == 'game':
+        mode = 'pause'
 
     if mode == 'game':
         if key == keys.R:
@@ -149,6 +158,8 @@ def on_key_down(key):
                 pelets.append(pelet)
 
     elif mode == 'win' and key == keys.RETURN and LEVEL < 5:
+        bomb_draw = random.randint(0, 1)
+        bomb.image = 'bomb'
         pelets.clear()
 
         add_ammo.y = -60
@@ -170,9 +181,14 @@ def on_key_down(key):
 
         win = ENEMIES_COUNT
         test = 1
-        mode = 'menu'
+        if LEVEL < 5:
+            mode = 'game'
+        else:
+            mode = 'menu'
 
     if mode == 'end' and key == keys.RETURN:
+        bomb_draw = random.randint(0, 1)
+        bomb.image = 'bomb'
         pelets.clear()
 
         add_ammo.y = -60
@@ -190,7 +206,7 @@ def on_key_down(key):
 
         win = ENEMIES_COUNT
         test = 1
-        mode = 'menu'
+        mode = 'game'
 
 def on_mouse_down(pos, button):
     global mode, bomb
@@ -198,15 +214,14 @@ def on_mouse_down(pos, button):
         if play.collidepoint(pos):
             mode = 'game'
             bomb.image = 'bomb'
-        if instruction.collidepoint(pos):
-            mode = 'instr...'
         elif settings.collidepoint(pos):
-            mode = 'settings'
-    elif mode == 'instr...' and button == mouse.LEFT or mode == 'settings' and button == mouse.LEFT:
-        if mode == 'settings':
-            if settings_m.collidepoint(pos):
-                mode = 'miusic_settings'
-        if cross.collidepoint(pos):
+            mode = 'miusic_settings'
+        elif instruction.collidepoint(pos):
+            mode = 'instr...'
+        elif exit.collidepoint(pos):
+            exit()
+    elif mode == 'instr...' and button == mouse.LEFT:
+        if back.collidepoint(pos):
             mode = 'menu'
     elif mode == 'miusic_settings' and button == mouse.LEFT:
         save_settings = False
@@ -233,8 +248,15 @@ def on_mouse_down(pos, button):
             helpers.reload_audio_settings(AudioType.SFX)
             helpers.reload_audio_settings(AudioType.MUSIC)
 
-        if cross.collidepoint(pos):
-            mode = 'settings'
+        if back.collidepoint(pos):
+            mode = 'menu'
+    elif button == mouse.LEFT:
+        if back_to_game.collidepoint(pos):
+            mode = 'game'
+        if back_to_menu.collidepoint(pos):
+            mode = 'menu'
+        if exit.collidepoint(pos):
+            exit()
 
 def collision():
     global pelets, enemies, win, mode, AMMO, add_ammo, additional_ammunition, bomb

@@ -2,6 +2,7 @@ from token import LEFTSHIFT
 
 from common import size_w, size_h
 
+import random
 #Paramertry gracza
 
 test = 1
@@ -9,6 +10,8 @@ test = 1
 LEVEL = 1
 
 shot = 0
+
+bomb_draw = random.randint(0, 1)
 
 additional_ammunition = 1
 ammo_in_gun = 6
