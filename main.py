@@ -219,7 +219,7 @@ def on_mouse_down(pos, button):
         elif instruction.collidepoint(pos):
             mode = 'instr...'
         elif exit.collidepoint(pos):
-            exit()
+            quit()
     elif mode == 'instr...' and button == mouse.LEFT:
         if back.collidepoint(pos):
             mode = 'menu'
@@ -256,7 +256,7 @@ def on_mouse_down(pos, button):
         if back_to_menu.collidepoint(pos):
             mode = 'menu'
         if exit.collidepoint(pos):
-            exit()
+            quit()
 
 def collision():
     global pelets, enemies, win, mode, AMMO, add_ammo, additional_ammunition, bomb
